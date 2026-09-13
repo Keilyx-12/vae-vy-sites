@@ -1,0 +1,6 @@
+name = "vae-vy-sites"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[assets]
+directory = "./1"
