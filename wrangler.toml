@@ -1,0 +1,6 @@
+name = "vae-vy-sites"
+main = "1/index.html"
+compatibility_date = "2024-01-01"
+
+[assets]
+directory = "./1"
