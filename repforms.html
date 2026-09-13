@@ -2,82 +2,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rep Order Form | VY Sites</title>
   <style>
-    * { box-sizing: border-box; }
-    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0b0f17; color: #fff; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    
+    body, html { margin: 0; padding: 0; height: 100%; background: #0f172a; color: #fff; font-family: system-ui, sans-serif; }
     #loading { display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; font-size: 1.2rem; }
     
-    /* Top Action Bar */
-    #action-bar {
+    /* Top Bar Styling */
+    #copy-bar {
       display: none;
       align-items: center;
       justify-content: space-between;
       padding: 12px 24px;
-      background: #121824;
-      border-bottom: 1px solid #222c3d;
-      height: 60px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
     }
-
-    .order-info {
-      font-size: 14px;
-      color: #94a3b8;
-    }
-
-    .order-id-highlight {
-      color: #fff;
-      font-weight: 700;
-    }
-
-    /* Fillout-Style Purple/Pink Copy Button */
+    
     .fillout-btn {
       background-color: #a246b3;
       color: #ffffff;
-      font-family: inherit;
       font-size: 14px;
       font-weight: 600;
-      padding: 10px 20px;
+      padding: 8px 18px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.2s ease, transform 0.1s ease;
     }
-
-    .fillout-btn:hover {
-      background-color: #8e3aa0;
-    }
-
-    .fillout-btn:active {
-      transform: scale(0.98);
-    }
+    .fillout-btn:hover { background-color: #8e3aa0; }
+    .fillout-btn:active { transform: scale(0.98); }
   </style>
 </head>
 <body>
+  <div id="loading">Generating secure order ID...</div>
 
-  <div id="loading">Generating order ID...</div>
-
-  <!-- Action Bar displaying Order ID & Copy Button -->
-  <div id="action-bar">
-    <div class="order-info">
-      Client Link Active: <span class="order-id-highlight" id="active-id-text">...</span>
-    </div>
-    <button class="fillout-btn" id="copyBtn" onclick="copyClientLink()">
-      Copy Client Link
-    </button>
+  <!-- Real Copy Button Bar -->
+  <div id="copy-bar">
+    <span id="order-label" style="font-weight: 600; color: #cbd5e1;">Order ID: Loading...</span>
+    <button class="fillout-btn" id="copyBtn" onclick="copyClientLink()">Copy Client Link</button>
   </div>
 
-  <!-- Form Container -->
-  <div id="form-container" style="width:100%; height:calc(100% - 60px);"></div>
+  <div id="form-container" style="width:100%;height:calc(100vh - 55px);"></div>
 
   <script>
-    let clientUrl = "";
+    let currentOrderId = '';
 
     async function loadFormWithGlobalID() {
       const urlParams = new URLSearchParams(window.location.search);
 
-      // Fetch order_id if not already present
       if (!urlParams.has('order_id')) {
         try {
           const response = await fetch('https://order-counter.thefakeemail976.workers.dev');
@@ -90,20 +61,17 @@
           }
         } catch (err) {
           console.error("Worker fetch failed:", err);
-          document.getElementById('loading').innerText = "Error fetching ID. Please refresh.";
+          document.getElementById('loading').innerText = "Error loading order form.";
           return;
         }
       }
 
-      const activeOrderId = urlParams.get('order_id');
-      clientUrl = `https://vysites.com/minibuilder.html?order_id=${activeOrderId}`;
+      currentOrderId = urlParams.get('order_id') || '';
 
-      // Update UI elements
       document.getElementById('loading').style.display = 'none';
-      document.getElementById('action-bar').style.display = 'flex';
-      document.getElementById('active-id-text').innerText = activeOrderId;
+      document.getElementById('copy-bar').style.display = 'flex';
+      document.getElementById('order-label').innerText = `Active Order ID: ${currentOrderId}`;
 
-      // Embed Fillout
       document.getElementById('form-container').innerHTML = `
         <div data-fillout-id="3wuF4gSz7Dus" 
              data-fillout-embed-type="fullscreen" 
@@ -117,21 +85,16 @@
       document.body.appendChild(script);
     }
 
-    // Clipboard Copy Action
     function copyClientLink() {
-      if (!clientUrl) return;
-
-      navigator.clipboard.writeText(clientUrl).then(() => {
+      const fullUrl = `https://vysites.com/minibuilder.html?order_id=${currentOrderId}`;
+      navigator.clipboard.writeText(fullUrl).then(() => {
         const btn = document.getElementById('copyBtn');
         btn.innerText = "Copied!";
-        btn.style.backgroundColor = "#22c55e"; // Green feedback
-        
+        btn.style.backgroundColor = "#22c55e";
         setTimeout(() => {
           btn.innerText = "Copy Client Link";
-          btn.style.backgroundColor = "#a246b3"; // Reset to purple/pink
+          btn.style.backgroundColor = "#a246b3";
         }, 2500);
-      }).catch(err => {
-        console.error('Copy failed:', err);
       });
     }
 
