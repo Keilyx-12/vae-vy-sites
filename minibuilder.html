@@ -18,9 +18,22 @@
 </head>
 <body>
   <div style="position:fixed;top:0px;left:0px;right:0px;bottom:0px;">
-    <!-- Replace YOUR_BUILDER_FORM_ID with your Form 2 Fillout ID -->
-    <div data-fillout-id="tmcgUSJSiCus" data-fillout-embed-type="fullscreen" style="width:100%;height:100%;" data-fillout-inherit-parameters></div>
-    <script src="https://server.fillout.com/embed/v1/"></script>
+    <div id="fillout-embed" 
+         data-fillout-id="tmcgUSJSiCus" 
+         data-fillout-embed-type="fullscreen" 
+         style="width:100%;height:100%;" 
+         data-fillout-inherit-parameters>
+    </div>
   </div>
+
+  <script>
+    // Explicitly grab order_id from URL and attach as custom attribute
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('order_id');
+    if (orderId) {
+      document.getElementById('fillout-embed').setAttribute('data-fillout-order_id', orderId);
+    }
+  </script>
+  <script src="https://server.fillout.com/embed/v1/"></script>
 </body>
 </html>
