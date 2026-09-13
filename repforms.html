@@ -7,25 +7,28 @@
     body, html { margin: 0; padding: 0; height: 100%; background: #0f172a; color: #fff; font-family: system-ui, sans-serif; }
     #loading { display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; font-size: 1.2rem; }
     
-    /* Top Bar Styling */
-    #copy-bar {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 24px;
-      background: #1e293b;
-      border-bottom: 1px solid #334155;
+    #form-container { width: 100%; height: 100vh; }
+
+    /* Floating Bottom Action Bar */
+    #bottom-bar {
+      display: none; /* Hidden while filling out form */
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
     }
     
     .fillout-btn {
       background-color: #a246b3;
       color: #ffffff;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
-      padding: 8px 18px;
+      padding: 12px 28px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
       transition: background-color 0.2s ease, transform 0.1s ease;
     }
     .fillout-btn:hover { background-color: #8e3aa0; }
@@ -35,13 +38,12 @@
 <body>
   <div id="loading">Generating secure order ID...</div>
 
-  <!-- Real Copy Button Bar -->
-  <div id="copy-bar">
-    <span id="order-label" style="font-weight: 600; color: #cbd5e1;">Order ID: Loading...</span>
+  <div id="form-container"></div>
+
+  <!-- Bottom Copy Button -->
+  <div id="bottom-bar">
     <button class="fillout-btn" id="copyBtn" onclick="copyClientLink()">Copy Client Link</button>
   </div>
-
-  <div id="form-container" style="width:100%;height:calc(100vh - 55px);"></div>
 
   <script>
     let currentOrderId = '';
@@ -67,11 +69,9 @@
       }
 
       currentOrderId = urlParams.get('order_id') || '';
-
       document.getElementById('loading').style.display = 'none';
-      document.getElementById('copy-bar').style.display = 'flex';
-      document.getElementById('order-label').innerText = `Active Order ID: ${currentOrderId}`;
 
+      // Load Fillout Embed
       document.getElementById('form-container').innerHTML = `
         <div data-fillout-id="3wuF4gSz7Dus" 
              data-fillout-embed-type="fullscreen" 
@@ -84,6 +84,13 @@
       script.src = "https://server.fillout.com/embed/v1/";
       document.body.appendChild(script);
     }
+
+    // Listen for form submission event from Fillout iframe
+    window.addEventListener('message', function(event) {
+      if (event.data && (event.data.type === 'fillout_submit' || event.data.eventName === 'formSubmitted')) {
+        document.getElementById('bottom-bar').style.display = 'block';
+      }
+    });
 
     function copyClientLink() {
       const fullUrl = `https://vysites.com/minibuilder.html?order_id=${currentOrderId}`;
