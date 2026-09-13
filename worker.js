@@ -1,26 +1,28 @@
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const path = url.pathname;
+    let pathname = url.pathname;
 
-    // 1. Serve root index.html
-    if (path === "/" || path === "") {
-      return env.ASSETS.fetch(new URL("/index.html", request.url));
+    // 1. Root route -> /index.html
+    if (pathname === "/" || pathname === "") {
+      pathname = "/index.html";
+    } 
+    // 2. Clean subpages without extensions (e.g. /repform -> /repform.html)
+    else if (!pathname.includes(".")) {
+      if (pathname.endsWith("/")) {
+        pathname = pathname.slice(0, -1);
+      }
+      pathname = `${pathname}.html`;
     }
 
-    // 2. Try fetching the raw request (for images, CSS, JS, or direct .html)
-    const response = await env.ASSETS.fetch(request);
-    if (response.status !== 404) {
-      return response;
-    }
+    // Construct a clean single-use target URL preserving query parameters
+    const targetUrl = new URL(`${pathname}${url.search}`, request.url);
 
-    // 3. Clean trailing slashes & append .html for clean routes (e.g. /repform -> /repform.html)
-    if (!path.includes(".")) {
-      const cleanPath = path.endsWith("/") ? path.slice(0, -1) : path;
-      const htmlUrl = new URL(`${cleanPath}.html${url.search}`, request.url);
-      return env.ASSETS.fetch(htmlUrl);
+    try {
+      return await env.ASSETS.fetch(targetUrl);
+    } catch (err) {
+      // Fallback just in case target asset isn't found
+      return env.ASSETS.fetch(request);
     }
-
-    return response;
   }
 };
